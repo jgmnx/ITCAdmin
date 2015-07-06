@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    
+    <ui:composition template="../WEB-INF/template.xhtml">
+
+        <ui:define name="title">
+            <h:outputText value="#{bundle.app_versions_page_title}"></h:outputText>
+        </ui:define>
+
+        <ui:define name="head">
+            <style type="text/css">
+                .label {
+                    font-weight: bold;
+                }
+            </style>
+        </ui:define>
+
+        <ui:define name="body">
+            <h:form id="form">
+                <p:growl id="messages" showDetail="true" />
+                
+                <p:commandButton id="app_versions_add"
+                    value="#{bundle.app_versions_add_button}"
+                    oncomplete="PF('appVersionDialog').show();" 
+                    update="messages,:form:appVersionDetail" 
+                    actionListener="#{appVersionsView.createAppVersion}"/>
+                
+                <br/><br/>
+
+                <p:dataTable id="appVersionsDT" var="appVersion" 
+                             value="#{appVersionsView.appVersions}"
+                             style="width: 60%">
+
+                    <f:facet name="header">
+                        #{bundle.app_versions_table_title}
+                    </f:facet>
+                    
+                    <p:column headerText="#{bundle.app_versions_header_id}"
+                              style="width:300px;" 
+                              sortBy="#{appVersion.id}">
+                        <h:outputText value="#{appVersion.id}" />
+                    </p:column>
+                    <p:column headerText="#{bundle.app_versions_header_comment}" 
+                              sortBy="#{appVersion.comment}">
+                        <h:outputText value="#{appVersion.comment}" />
+                    </p:column>
+                    <p:column style="width:32px;text-align: center">
+                        <p:commandButton 
+                                         icon="ui-icon-trash"
+                                         oncomplete="PF('confirmDeleteDialog').show();" >
+                            <f:setPropertyActionListener value="#{appVersion}" 
+                                                         target="#{appVersionsView.selectedAppVersion}" />
+                        </p:commandButton>
+                    </p:column>
+                </p:dataTable>
+
+                <p:confirmDialog header="#{bundle.app_versions_remove_dialog_header}"
+                                 widgetVar="confirmDeleteDialog" showEffect="fade" 
+                                 message="#{bundle.app_versions_remove_dialog_message}">
+                    <p:commandButton value="Yes"
+                                     styleClass="ui-confirmdialog-yes" 
+                                     icon="ui-icon-check"
+                                     actionListener="#{appVersionsView.deleteAppVersion}" 
+                                     oncomplete="PF('confirmDeleteDialog').hide()"
+                                     update="messages,:form:appVersionsDT"
+                                     />
+                    <p:commandButton value="No" type="button" 
+                                     onclick="PF('confirmDeleteDialog').hide()" 
+                                     styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                </p:confirmDialog>
+                
+                <p:dialog header="#{bundle.app_versions_add_dialog_header}" widgetVar="appVersionDialog" modal="true" 
+                          showEffect="fade" hideEffect="fade" resizable="false" fitViewport="true" dynamic="true" 
+                          width="50%">
+                    <p:outputPanel id="appVersionDetail" >
+                        <p:panelGrid columns="2" 
+                                     columnClasses="label,value" style="width: 100%">
+                            <h:outputText value="#{bundle.app_versions_add_dialog_label_id}" />
+                            <p:inputText value="#{appVersionsView.selectedAppVersion.id}" size="40" disabled="true"/>
+                            <h:outputText value="#{bundle.app_versions_add_dialog_label_comment}" />
+                            <p:inputTextarea value="#{appVersionsView.selectedAppVersion.comment}" rows="2" cols="50" />
+                        </p:panelGrid>
+                    </p:outputPanel>
+                    <f:facet name="footer">
+                        <p:commandButton update=":form:appVersionsDT" 
+                                         oncomplete="PF('appVersionDialog').hide()" 
+                                         icon="ui-icon-disk" title="#{bundle.global_button_save}" 
+                                         value="#{bundle.global_button_save}" 
+                                         actionListener="#{appVersionsView.addAppVersion}"/>
+                    </f:facet>
+                </p:dialog>
+            </h:form>
+                
+        </ui:define>
+    </ui:composition>
+
+</html>    

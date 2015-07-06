@@ -1,0 +1,11 @@
+delete from line;
+insert into line (id,name,text,legacy_name,description,image,norder) values (1,'ax_tech','AX Tech','AX TECH','Soldadoras, inversores, caretas y consumibles','ax_tech.jpg',1);
+insert into line (id,name,text,legacy_name,description,image,norder) values (2,'ax_tech_ultra','AX Tech Ultra','AX TECH ULTRA','Soldadoras inversoras','ax_tech_ultra.jpg',2);
+insert into line (id,name,text,legacy_name,description,image,norder) values (3,'volt','Volt','VOLT','Soldadoras','volt.jpg',3);
+insert into line (id,name,text,legacy_name,description,image,norder) values (4,'ciclon','Ciclon Flow','CICLON FLOW','Hidrolavadoras, consumibles y accesorios','ciclon.jpg',4);
+insert into line (id,name,text,legacy_name,description,image,norder) values (5,'tonka','Tonka Force','TONKA FORCE','Rompedores a gasolina','tonka.jpg',5);
+insert into line (id,name,text,legacy_name,description,image,norder) values (6,'powerland','PowerLand','POWERLAND','Generadores','powerland.jpg',6);
+insert into line (id,name,text,legacy_name,description,image,norder) values (7,'nitro','Nitro Machinery','NITRO MACHINERY','Motobombas, motores y generadores','nitro.jpg',7);
+insert into line (id,name,text,legacy_name,description,image,norder) values (8,'masalta','Masalta','MASALTA','Equipo de construccion','masalta.jpg',8);
+insert into line (id,name,text,legacy_name,description,image,norder) values (9,'stanley','Stanley Welding','STANLEY WELDING','Soldadoras','stanley.jpg',9);
+select * from line;

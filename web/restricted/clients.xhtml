@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <ui:composition template="../WEB-INF/template.xhtml">
+
+        <ui:define name="title">
+            <h:outputText value="#{bundle.clients_page_title}"></h:outputText>
+        </ui:define>
+
+        <ui:define name="head">
+            <style type="text/css">
+                .label {
+                    font-weight: bold;
+                }
+            </style>
+        </ui:define>
+
+        <ui:define name="body">
+            <h:form id="form">
+                <p:growl id="messages" showDetail="true" />
+
+                <p:dataTable id="clientsDT" var="client" value="#{clientsView.clients}"
+                             filteredValue="#{clientsView.filteredClients}"
+                             paginator="true" rows="10" rowsPerPageTemplate="10,20,50,100">
+                    <f:facet name="header">
+                        #{bundle.clients_table_title}
+                    </f:facet>
+                    <p:column style="width:32px;text-align: center" headerText="#{bundle.clients_table_header_id}">
+                        <h:outputText value="#{client.id}" />
+                    </p:column>
+                    <p:column headerText="#{bundle.clients_table_header_name}" sortBy="#{client.name}"
+                              filterBy="#{client.name}" filterMatchMode="contains" filterStyle="width:200px;float:right">
+                        <h:outputText value="#{client.name}" />
+                    </p:column>
+                    <p:column style="width:75px;text-align: center" 
+                              headerText="#{bundle.clients_table_header_price_list}" sortBy="#{client.priceList}">
+                        <h:outputText value="#{client.priceList}" />
+                    </p:column>
+                    <p:column style="width:75px;text-align: center" 
+                              headerText="#{bundle.clients_table_header_username}" sortBy="#{client.username}">
+                        <h:outputText value="#{client.username}" />
+                    </p:column>
+                    <p:column style="width:150px;text-align: center" 
+                              headerText="#{bundle.clients_table_header_passwd}">
+                        <h:outputText value="#{client.passwd}" />
+                    </p:column>
+                    <p:column style="width:75px;text-align: center" 
+                              headerText="#{bundle.clients_table_header_active}" sortBy="#{client.active}">
+                        <p:selectBooleanCheckbox value="#{client.active}" disabled="true"/>
+                    </p:column>
+                    <p:column headerText="#{bundle.clients_table_header_agent}" sortBy="#{client.agent.name}">
+                        <h:outputText value="#{client.agent.name}" />
+                    </p:column>
+                    <p:column style="width:32px;text-align: center">
+                        <p:commandButton update=":form:clientDetail" oncomplete="PF('clientDialog').show()" 
+                                         icon="ui-icon-search" title="#{bundle.global_button_detail}">
+                            <f:setPropertyActionListener value="#{client}" target="#{clientsView.selectedClient}" />
+                        </p:commandButton>
+                    </p:column>
+                </p:dataTable>
+
+                <p:dialog header="#{bundle.clients_dialog_header}" widgetVar="clientDialog" modal="true" 
+                          closeOnEscape="true" showEffect="fade" hideEffect="fade" resizable="false" >
+                    <p:outputPanel id="clientDetail">
+                        <p:panelGrid columns="2" rendered="#{not empty clientsView.selectedClient}" 
+                                     columnClasses="label,value">
+                            <p:outputLabel value="#{bundle.clients_dialog_label_id}" />
+                            <p:outputLabel value="#{clientsView.selectedClient.id}" />
+                            <p:outputLabel value="#{bundle.clients_dialog_label_name}" />
+                            <p:outputLabel value="#{clientsView.selectedClient.name}" />
+                            <p:outputLabel value="#{bundle.clients_dialog_label_price_list}" />
+                            <p:outputLabel value="#{clientsView.selectedClient.priceList}" />
+                            <p:outputLabel value="#{bundle.clients_dialog_label_username}" />
+                            <p:outputLabel value="#{clientsView.selectedClient.username}" />
+                            <p:outputLabel value="#{bundle.clients_dialog_label_passwd}" />
+                            <p:outputLabel value="#{clientsView.selectedClient.passwd}" />
+                            <p:outputLabel value="#{bundle.clients_dialog_label_active}" />
+                            <p:selectBooleanCheckbox value="#{clientsView.selectedClient.active}" disabled="true" />
+                            <p:outputLabel value="#{bundle.clients_dialog_label_agent}" />
+                            <p:outputLabel value="#{clientsView.selectedClient.agent.name}" />
+                        </p:panelGrid>
+                    </p:outputPanel>
+                </p:dialog>
+
+            </h:form>
+
+        </ui:define>
+    </ui:composition>
+
+</html>    

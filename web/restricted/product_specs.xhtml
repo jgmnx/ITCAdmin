@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+      >
+    
+    <ui:composition template="../WEB-INF/template.xhtml">
+
+        <ui:define name="title">
+            <h:outputText value="#{bundle.product_specs_page_title}"></h:outputText>
+        </ui:define>
+
+        <ui:define name="head">
+            <style type="text/css">
+                .col1 {
+                    vertical-align: top;
+                    width: 120px;
+                }
+                .col2 {
+                    vertical-align: top;
+                    width: 200px;
+                }
+                .col3 {
+                    vertical-align: top;
+                    width: 600px;
+                }
+                .col4 {
+                    vertical-align: middle;
+                    text-align: center;
+                }
+                .col5 {
+                    vertical-align: middle;
+                }
+                .value {
+                    vertical-align: top;
+                }
+            </style>
+        </ui:define>
+
+        <ui:define name="body">
+            <h:form id="form">
+                <p:growl id="messages" showDetail="true" />
+                
+                <h:panelGrid id="grid1" columns="4" cellpadding="5" columnClasses="col1, col2, col3, col4">
+                    <h:panelGroup id="cont1">
+                        <p:selectOneListbox id="lines" value="#{productSpecsView.selectedLineId}" style="width: 100%">
+                            <f:selectItems value="#{productSpecsView.lines}" var="line"
+                                           itemValue="#{line.id}" itemLabel="#{line.text}" />
+                            <p:ajax listener="#{productSpecsView.changeLineListener}" update="cont2 cont3 cont4 cont5" />
+                        </p:selectOneListbox>
+                    </h:panelGroup>
+                    <h:panelGroup id="cont2">
+                        <c:choose>
+                            <c:when test="#{productSpecsView.selectedLineId == null}">
+                                <p:selectOneListbox id="categories_nl" style="width: 100%">
+                                    <f:selectItem itemValue="-1" itemLabel="Seleccionar linea" />
+                                </p:selectOneListbox>
+                            </c:when>
+                            <c:otherwise>
+                                <p:selectOneListbox id="categories" value="#{productSpecsView.selectedCategoryId}" 
+                                                    style="width: 100%">
+                                    <f:selectItems value="#{productSpecsView.categories}" var="category" 
+                                                   itemValue="#{category.id}" itemLabel="#{category.text}"/>
+                                    <p:ajax listener="#{productSpecsView.changeCategoryListener}" update="cont3 cont4 cont5" />
+                                </p:selectOneListbox>
+                            </c:otherwise>
+                        </c:choose>
+                    </h:panelGroup>
+                    <h:panelGroup id="cont3">
+                        <c:choose>
+                            <c:when test="#{productSpecsView.selectedCategoryId == null}">
+                                <p:selectOneListbox id="products_nc">
+                                    <f:selectItem itemValue="-1" itemLabel="Seleccionar categoria" />
+                                </p:selectOneListbox>
+                            </c:when>
+                            <c:when test="#{productSpecsView.selectedCategoryId != null and fn:length(productSpecsView.products) eq 0}">
+                                <p:selectOneListbox id="products_np">
+                                    <f:selectItem itemValue="-1" itemLabel="No hay productos" />
+                                </p:selectOneListbox>
+                            </c:when>
+                            <c:otherwise>
+                                <p:selectOneListbox id="products" value="#{productSpecsView.selectedProductId}"
+                                                    style="width: 100%">
+                                    <f:selectItems value="#{productSpecsView.products}" var="product"
+                                                   itemValue="#{product.id}" itemLabel="#{product.description}"/>
+                                    <p:ajax listener="#{productSpecsView.changeProductListener}" update="cont4 cont5" />
+                                </p:selectOneListbox>
+                            </c:otherwise>
+                        </c:choose>
+                    </h:panelGroup>
+                    <h:panelGroup id="cont4" style="text-align: center">
+                        <p:graphicImage id="productImg"
+                                    rendered="#{productSpecsView.selectedProductId != null}"
+                                    cache="false" 
+                                    value="/getImage?type=product&amp;id=#{productSpecsView.selectedProductId}&amp;size=small"/>
+                    </h:panelGroup>
+                </h:panelGrid>
+                
+                <h:panelGroup id="cont5">
+                    <p:dataTable id="productSpecsDT" var="productSpec" value="#{productSpecsView.productSpecs}">
+                        <f:facet name="header">
+                            #{bundle.product_specs_table_title}
+                        </f:facet>
+                        <p:column headerText="#{bundle.product_specs_table_header_spec}" 
+                                  sortBy="#{productSpec.spec}">
+                            <h:outputText value="#{productSpec.spec}" />
+                        </p:column>
+                        <p:column headerText="#{bundle.product_specs_table_header_value}" 
+                                  style="width:120px;text-align: center" 
+                                  sortBy="#{productSpec.value}">
+                            <h:outputText value="#{productSpec.value}" />
+                        </p:column>
+                    </p:dataTable>
+                </h:panelGroup>
+                
+            </h:form>
+                
+        </ui:define>
+    </ui:composition>
+
+</html>    

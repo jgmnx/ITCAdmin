@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <ui:composition template="../WEB-INF/template.xhtml">
+
+        <ui:define name="title">
+            <h:outputText value="#{bundle.lines_page_title}"></h:outputText>
+        </ui:define>
+
+        <ui:define name="head">
+            <style type="text/css">
+                .label {
+                    font-weight: bold;
+                }
+            </style>
+        </ui:define>
+
+        <ui:define name="body">
+            <h:form id="form">
+                <p:growl id="messages" showDetail="true" />
+
+                <p:dataTable id="linesDT" var="line" value="#{linesView.lines}"
+                             filteredValue="#{linesView.filteredLines}">
+                    <f:facet name="header">
+                        #{bundle.lines_table_title}
+                    </f:facet>
+                    <p:column style="width:32px;text-align: center" headerText="#{bundle.lines_table_header_id}">
+                        <h:outputText value="#{line.id}" />
+                    </p:column>
+                    <p:column headerText="#{bundle.lines_table_header_name}">
+                        <h:outputText value="#{line.name}" />
+                    </p:column>
+                    <p:column headerText="#{bundle.lines_table_header_text}" 
+                              sortBy="#{line.text}">
+                        <h:outputText value="#{line.text}" />
+                    </p:column>
+                    <p:column headerText="#{bundle.lines_table_header_legacy_name}">
+                        <h:outputText value="#{line.legacyName}" />
+                    </p:column>
+                    <p:column headerText="#{bundle.lines_table_header_description}">
+                        <h:outputText value="#{line.description}" />
+                    </p:column>
+                    <p:column headerText="#{bundle.lines_table_header_order}" 
+                              sortBy="#{line.norder}">
+                        <h:outputText value="#{line.norder}" />
+                    </p:column>
+                    <p:column style="width:32px;text-align: center">
+                        <p:commandButton update=":form:lineDetail" oncomplete="PF('lineDialog').show()" 
+                                         icon="ui-icon-search" title="#{bundle.global_button_detail}">
+                            <f:setPropertyActionListener value="#{line}" target="#{linesView.selectedLine}" />
+                        </p:commandButton>
+                    </p:column>
+                </p:dataTable>
+
+                <p:dialog header="#{bundle.lines_dialog_header}" widgetVar="lineDialog" modal="true" 
+                          closeOnEscape="true" showEffect="fade" hideEffect="fade" resizable="false" >
+                    <p:outputPanel id="lineDetail">
+                        <p:panelGrid columns="2" rendered="#{not empty linesView.selectedLine}" 
+                                     columnClasses="label,value">
+                            <p:outputLabel value="#{bundle.lines_dialog_label_id}" />
+                            <p:outputLabel value="#{linesView.selectedLine.id}" />
+                            <p:outputLabel value="#{bundle.lines_dialog_label_name}" />
+                            <p:outputLabel value="#{linesView.selectedLine.name}" />
+                            <p:outputLabel value="#{bundle.lines_dialog_label_text}" />
+                            <p:outputLabel value="#{linesView.selectedLine.text}" />
+                            <p:outputLabel value="#{bundle.lines_dialog_label_legacy_name}" />
+                            <p:outputLabel value="#{linesView.selectedLine.legacyName}" />
+                            <p:outputLabel value="#{bundle.lines_dialog_label_description}" />
+                            <p:outputLabel value="#{linesView.selectedLine.description}" />
+                            <p:outputLabel value="#{bundle.lines_dialog_label_image}" />
+                            <p:outputLabel value="#{linesView.selectedLine.name}" />
+                            <p:outputLabel value="#{bundle.lines_dialog_label_order}" />
+                            <p:outputLabel value="#{linesView.selectedLine.norder}" />
+                        </p:panelGrid>
+                        
+                    </p:outputPanel>
+                </p:dialog>
+
+            </h:form>
+
+        </ui:define>
+    </ui:composition>
+
+</html>    

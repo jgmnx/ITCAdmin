@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+
+    <ui:composition template="../WEB-INF/template.xhtml">
+        <ui:define name="title">
+            <h:outputText value="#{bundle.update_title}"></h:outputText>
+        </ui:define>
+        
+         <ui:define name="body">
+             <h:form>
+                 <p:growl id="messages" showDetail="true" />
+
+                <h:panelGrid columns="2" style="text-align: center">
+                    <p:outputLabel value="#{bundle.update_agents}" />
+                    <p:selectBooleanCheckbox value="#{updateView.updateAgents}" >
+                        <p:ajax listener="#{updateView.updateChecksListener}" />
+                    </p:selectBooleanCheckbox>
+                    <p:outputLabel value="#{bundle.update_clients}" />
+                    <p:selectBooleanCheckbox value="#{updateView.updateClients}" >
+                        <p:ajax listener="#{updateView.updateChecksListener}" />
+                    </p:selectBooleanCheckbox>
+                    <p:outputLabel value="#{bundle.update_products}" />
+                    <p:selectBooleanCheckbox value="#{updateView.updateProducts}" >
+                        <p:ajax listener="#{updateView.updateChecksListener}" />
+                    </p:selectBooleanCheckbox>
+                </h:panelGrid>
+                 
+                <p:fileUpload 
+                    fileUploadListener="#{updateView.handleFileUpload}"
+                    mode="advanced" dragDropSupport="true" 
+                    allowTypes="/(\.|\/)(xls|xlsx|csv)$/"
+                    fileLimit="1" sizeLimit="1000000"
+                    update="messages" />
+                 
+             </h:form>
+                 
+         </ui:define>
+    </ui:composition>
+    
+</html>    
+    

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <ui:composition template="../WEB-INF/template.xhtml">
+
+        <ui:define name="title">
+            <h:outputText value="#{bundle.categories_page_title}"></h:outputText>
+        </ui:define>
+
+        <ui:define name="head">
+            <style type="text/css">
+                .label {
+                    font-weight: bold;
+                }
+            </style>
+        </ui:define>
+
+        <ui:define name="body">
+            <h:form id="form">
+                <p:growl id="messages" showDetail="true" />
+
+                <p:dataTable id="categoriesDT" var="category" value="#{categoriesView.categories}"
+                             filteredValue="#{categoriesView.filteredCategories}"
+                             paginator="true" rows="10" rowsPerPageTemplate="10,20,50,100">
+                    <f:facet name="header">
+                        #{bundle.categories_table_title}
+                    </f:facet>
+                    <p:column style="width:32px;text-align: center" headerText="#{bundle.categories_table_header_id}">
+                        <h:outputText value="#{category.id}" />
+                    </p:column>
+                    <p:column headerText="#{bundle.categories_table_header_name}" 
+                              style="width:100px">
+                        <h:outputText value="#{category.name}" />
+                    </p:column>
+                    <p:column headerText="#{bundle.categories_table_header_text}" 
+                              sortBy="#{category.text}">
+                        <h:outputText value="#{category.text}" />
+                    </p:column>
+                    <p:column headerText="#{bundle.categories_table_header_legacy_name}">
+                        <h:outputText value="#{category.legacyName}" />
+                    </p:column>
+                    <p:column headerText="#{bundle.categories_table_header_description}">
+                        <h:outputText value="#{category.description}" />
+                    </p:column>
+                    <p:column headerText="#{bundle.categories_table_header_line}"
+                              sortBy="#{category.line.text}">
+                        <h:outputText value="#{category.line.text}" />
+                    </p:column>
+                    <p:column headerText="#{bundle.categories_table_header_order}" 
+                              style="width:70px;text-align: center"
+                              sortBy="#{category.norder}">
+                        <h:outputText value="#{category.norder}" />
+                    </p:column>
+                    <p:column style="width:32px;text-align: center">
+                        <p:commandButton update=":form:categoryDetail" oncomplete="PF('categoryDialog').show()" 
+                                         icon="ui-icon-search" title="#{bundle.global_button_detail}">
+                            <f:setPropertyActionListener value="#{category}" target="#{categoriesView.selectedCategory}" />
+                        </p:commandButton>
+                    </p:column>
+                </p:dataTable>
+
+                <p:dialog header="#{bundle.categories_dialog_header}" widgetVar="categoryDialog" modal="true" 
+                          closeOnEscape="true" showEffect="fade" hideEffect="fade" resizable="false" >
+                    <p:outputPanel id="categoryDetail">
+                        <p:panelGrid columns="2" rendered="#{not empty categoriesView.selectedCategory}" 
+                                     columnClasses="label,value">
+                            <p:outputLabel value="#{bundle.categories_dialog_label_id}" />
+                            <p:outputLabel value="#{categoriesView.selectedCategory.id}" />
+                            <p:outputLabel value="#{bundle.categories_dialog_label_name}" />
+                            <p:outputLabel value="#{categoriesView.selectedCategory.name}" />
+                            <p:outputLabel value="#{bundle.categories_dialog_label_text}" />
+                            <p:outputLabel value="#{categoriesView.selectedCategory.text}" />
+                            <p:outputLabel value="#{bundle.categories_dialog_label_legacy_name}" />
+                            <p:outputLabel value="#{categoriesView.selectedCategory.legacyName}" />
+                            <p:outputLabel value="#{bundle.categories_dialog_label_description}" />
+                            <p:outputLabel value="#{categoriesView.selectedCategory.description}" />
+                            <p:outputLabel value="#{bundle.categories_dialog_label_image}" />
+                            <p:outputLabel value="#{categoriesView.selectedCategory.name}" />
+                            <p:outputLabel value="#{bundle.categories_dialog_label_order}" />
+                            <p:outputLabel value="#{categoriesView.selectedCategory.norder}" />
+                        </p:panelGrid>
+                    </p:outputPanel>
+                </p:dialog>
+
+            </h:form>
+
+        </ui:define>
+    </ui:composition>
+
+</html>    
