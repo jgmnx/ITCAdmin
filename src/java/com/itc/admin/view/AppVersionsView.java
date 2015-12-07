@@ -1,6 +1,11 @@
 package com.itc.admin.view;
 
 import com.itc.admin.entity.AppVersion;
+import com.itc.admin.entity.ImageCatalog;
+import com.itc.admin.entity.Product;
+import com.itc.admin.session.AppVersionFacade;
+import com.itc.admin.session.ImageCatalogFacade;
+import com.itc.admin.session.ProductFacade;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -19,7 +24,12 @@ import javax.faces.bean.ViewScoped;
 public class AppVersionsView implements Serializable {
 
     @EJB
-    private com.itc.admin.session.AppVersionFacade m_appVersionsFacade;
+    private AppVersionFacade m_appVersionsFacade;
+    @EJB
+    private ImageCatalogFacade m_imageCatalogFacade;
+    @EJB
+    private ProductFacade m_productsFacade;
+    
     private List<AppVersion> m_appVersions;
     private AppVersion m_selectedAppVersion;
     
@@ -51,9 +61,26 @@ public class AppVersionsView implements Serializable {
     }
     
     public void addAppVersion() {
-        m_appVersionsFacade.create(m_selectedAppVersion);
-        m_appVersions = m_appVersionsFacade.findAll();
-        m_selectedAppVersion = new AppVersion();
+        String basePath = "/public/images/";
+        try {
+            for(ImageCatalog np : m_imageCatalogFacade.findAllNewProducts()) {
+                ImageHelper.writeImage(np.getImage(), basePath, "new_" + np.getOrder());
+            }
+            for(ImageCatalog promo : m_imageCatalogFacade.findAllPromos()) {
+                ImageHelper.writeImage(promo.getImage(), basePath, "promo_" + promo.getOrder());
+            }
+            for(Product p : m_productsFacade.findAll()) {
+                ImageHelper.writeImage(p.getSmallPic(), basePath, "small_" + p.getId());
+                ImageHelper.writeImage(p.getSmallPic(), basePath, "large_" + p.getId());
+            }
+            m_appVersionsFacade.create(m_selectedAppVersion);
+            m_appVersions = m_appVersionsFacade.findAll();
+            m_selectedAppVersion = new AppVersion();
+        } catch (Exception e) {
+            e.printStackTrace();
+            JsfUtil.addErrorMessageSummary(e, "app_versions_add_error_images");
+        }
+        
     }
     
     public void deleteAppVersion() {

@@ -47,12 +47,4 @@ public class ClientsView implements Serializable {
         return m_filteredClients;
     }
 
-    public void edit() {
-        try {
-            m_clientFacade.edit(m_selectedClient);
-            JsfUtil.addSuccessMessage("clients_edit_success", m_selectedClient.getName());
-        } catch (Exception e) {
-            JsfUtil.addErrorMessage(e, "clients_edit_error", m_selectedClient.getName());
-        }
-    }
 }

@@ -47,13 +47,4 @@ public class AgentsView implements Serializable {
         return m_filteredAgents;
     }
     
-    public void edit() {
-        try {
-            m_agentsFacade.edit(m_selectedAgent);
-            JsfUtil.addSuccessMessage("agents_edit_success", m_selectedAgent.getName());
-        } catch (Exception e) {
-            JsfUtil.addErrorMessage(e, "agents_edit_error", m_selectedAgent.getName());
-        }
-    }
-
 }

@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <ui:composition template="../WEB-INF/template.xhtml">
+
+        <ui:define name="title">
+            <h:outputText value="#{bundle.new_products_page_title}"></h:outputText>
+        </ui:define>
+
+        <ui:define name="head">
+            <style type="text/css">
+                .ui-orderlist .ui-orderlist-list{
+                    width:  300px;
+                    height: 500px;
+                }
+            </style>
+            
+            <script type="text/javascript">
+                function setNumberOfFiles() {
+                    var fileUploadVar = PF('fileUploadVar');
+                    var length = fileUploadVar.files.length;
+                    var params = [{name: 'nFiles', value: length}];
+                    var i;
+                    for(i=0; i &lt; length ;i++) {
+                        params.push({name: 'file_' + i, value: fileUploadVar.files[i].name});
+                    }
+                    uploadStart(params);
+                }
+            </script>
+        </ui:define>
+
+        <ui:define name="body">
+            <h:form id="form_data">
+                <p:growl id="messages" showDetail="true" />
+
+                <h:panelGrid columns="2" style="width: 100%">
+                    <h:panelGroup style="text-align: center">
+                        <p:orderList id="imagesList" value="#{newProductsCatalogView.imagesIds}" var="imageId"
+                                     itemValue="#{imageId}" style="height: fit-content">
+
+                            <p:column style="text-align: center">
+                                <p:commandLink actionListener="#{newProductsCatalogView.selectImageAction}" 
+                                               process="@this">
+                                    <f:param name="imageId" value="#{imageId}" />
+                                    <p:graphicImage value="/getImage?type=new_product&amp;id=#{imageId}"
+                                                    cache="false" width="100" height="125" />
+                                </p:commandLink>
+                            </p:column>
+                        </p:orderList>
+
+                        <p:commandButton icon="ui-icon-refresh" value="#{bundle.new_products_reorder_images}" 
+                                         actionListener="#{newProductsCatalogView.reorderImages}"
+                                         update="messages,:form_data:imagesList,:form_data:galleria" />
+
+                        <p:commandButton icon="ui-icon-plus" title="#{bundle.global_button_add}" 
+                                         value="#{bundle.global_button_add}" 
+                                         update=":form_image:uploadFilePanel"
+                                         oncomplete="PF('uploadImageDialog').show()" />
+
+                        <p:commandButton icon="ui-icon-trash" value="#{bundle.new_products_drop_image}" 
+                                         actionListener="#{newProductsCatalogView.deleteImage}" 
+                                         update="messages,:form_data:imagesList,:form_data:galleria" />
+                    </h:panelGroup>
+                    <h:panelGroup>
+                        <p:galleria id="galleria" value="#{newProductsCatalogView.imagesIds}" var="imageId" 
+                                    panelWidth="600" panelHeight="500" autoPlay="false">
+                            <p:graphicImage value="/getImage?type=new_product&amp;id=#{imageId}"
+                                            cache="false"
+                                            width="350" height="450" />
+                        </p:galleria>
+                    </h:panelGroup>
+                </h:panelGrid>
+            </h:form>
+            
+            <h:form id="form_files">
+                <p:remoteCommand name="uploadStart" actionListener="#{newProductsCatalogView.startHook}" />
+            </h:form>
+
+            <h:form id="form_image">
+                <p:growl id="messages" showDetail="true" />
+                <p:dialog header="#{bundle.new_products_upload_images}" 
+                          widgetVar="uploadImageDialog" modal="true" 
+                          closeOnEscape="true" showEffect="fade" hideEffect="fade" 
+                          resizable="false" fitViewport="true" height="300px"
+                          dynamic="false" width="50%">
+                    <p:outputPanel id="uploadFilePanel" >
+                        <p:fileUpload widgetVar="fileUploadVar"
+                            fileUploadListener="#{newProductsCatalogView.handleFileUpload}"
+                            mode="advanced" dragDropSupport="true" multiple="true" 
+                            allowTypes="/(\.|\/)jpe?g$/"
+                            fileLimit="15" sizeLimit="1000000"
+                            onstart="setNumberOfFiles()"
+                            update="messages,:form_data:imagesList,:form_data:galleria"
+                            oncomplete="PF('uploadImageDialog').hide()"/>
+                    </p:outputPanel>
+                </p:dialog>
+            </h:form>
+
+        </ui:define>
+    </ui:composition>
+
+</html>    

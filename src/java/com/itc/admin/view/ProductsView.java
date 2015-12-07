@@ -79,7 +79,7 @@ public class ProductsView implements Serializable {
             m_productFacade.edit(m_selectedProduct);
             JsfUtil.addSuccessMessage("products_upload_file_success", id);
         } catch (Exception e) {
-            JsfUtil.addErrorMessage(e, "products_update_error");
+            JsfUtil.addErrorMessageSummary(e, "products_upload_file_error");
         }
     }
     

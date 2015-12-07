@@ -42,3 +42,9 @@ insert into product_spec (product,spec,value) values ('ASP-PD3000','Enchufe tipo
 insert into product_spec (product,spec,value) values ('ASP-PD3000','Seguro de bajo nivel de aceite',' ');
 
 select count(*) from product;
+
+select * from IMAGES_CATALOG where type='NEW' order by norder;
+select * from IMAGES_CATALOG where type='PROMO' order by norder;
+
+alter table product add column chksum_small bigint;
+alter table product add column chksum_big bigint;

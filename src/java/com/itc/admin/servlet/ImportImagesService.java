@@ -12,6 +12,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.List;
+import java.util.zip.CRC32;
+import java.util.zip.Checksum;
 import javax.ejb.EJB;
 import javax.imageio.ImageIO;
 import javax.servlet.ServletException;
@@ -73,10 +75,16 @@ public class ImportImagesService extends HttpServlet {
             ImageIO.write(bufferedImage, "jpeg", imageOs);
             byte[] imgBytes = imageOs.toByteArray();
             imageOs.close();
+            
+            Checksum checksum = new CRC32();
+            checksum.update(imgBytes, 0, imgBytes.length);
+            
             if ("small".equals(type)) {
                 product.setSmallPic(imgBytes);
+                product.setChecksumSmallPic(checksum.getValue());
             } else {
                 product.setBigPic(imgBytes);
+                product.setChecksumBigPic(checksum.getValue());
             }
             m_productFacade.edit(product);
             msg += " saved correctly!!!";

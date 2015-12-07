@@ -37,7 +37,7 @@ public class LoginView implements Serializable {
                 m_userName = m_password = null;
             }
         } catch (Exception e) {
-            JsfUtil.addErrorMessage(e, "login_failed");
+            JsfUtil.addErrorMessageSummary(e, "login_failed");
         }
         return ERROR_OUTCOME;
     }

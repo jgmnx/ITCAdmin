@@ -48,7 +48,6 @@ public class UpdateView implements Serializable {
 
     private static final String SMALL_IMG = "small";
     private static final String LARGE_IMG = "large";
-    private static final String TRUE = "TRUE";
             
     private final String AGENTS = JsfUtil.getMessage("update_agents");
     private final String CLIENTS = JsfUtil.getMessage("update_clients");
@@ -131,8 +130,12 @@ public class UpdateView implements Serializable {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            JsfUtil.addErrorMessage(e, "update_error");
+            JsfUtil.addErrorMessageSummary(e, "update_error");
         }
+    }
+    
+    private Cell getCell(Row row, int i) {
+        return row.getCell(i, Row.CREATE_NULL_AS_BLANK);
     }
 
     private void processUpdateAgents(Sheet agentsSheet) {
@@ -143,42 +146,54 @@ public class UpdateView implements Serializable {
         Set<Integer> newAgents = new HashSet<Integer>();
         Set<Integer> editedAgents = new HashSet<Integer>();
         Set<Integer> deletedAgents = new HashSet<Integer>();
-        for(int r = 1; r <= agentsSheet.getLastRowNum(); r++ ) {
-            row = agentsSheet.getRow(r);
-            agentId = new Double(row.getCell(0).getNumericCellValue()).intValue();
-            agent = m_agentsFacade.find(agentId);
-            isNew = agent == null;
-            if (isNew) {
-                agent = new Agent();
-                agent.setId(agentId);
+        
+        try {
+            for(int r = 1; r <= agentsSheet.getLastRowNum(); r++ ) {
+                row = agentsSheet.getRow(r);
+                agentId = getNumericCellValue(getCell(row, 0)).intValue();
+                agent = m_agentsFacade.find(agentId);
+                isNew = agent == null;
+                if (isNew) {
+                    agent = new Agent();
+                    agent.setId(agentId);
+                }
+                agent.setName(getStringCellValue(getCell(row, 1)));
+                agent.setSuperuser(getBooleanCellValue(getCell(row, 2)));
+                agent.setUsername(getStringCellValue(getCell(row, 3)));
+                agent.setPasswd(getStringCellValue(getCell(row, 4)));
+                agent.setActive(getBooleanCellValue(getCell(row, 5)));
+                if (isNew) {
+                    m_agentsFacade.create(agent);
+                    newAgents.add(agentId);
+                } else {
+                    m_agentsFacade.edit(agent);
+                    editedAgents.add(agentId);
+                }
             }
-            agent.setName(getStringCellValue(row.getCell(1)));
-            agent.setSuperuser(getBooleanCellValue(row.getCell(2)));
-            agent.setUsername(getStringCellValue(row.getCell(3)));
-            agent.setPasswd(getStringCellValue(row.getCell(4)));
-            agent.setActive(getBooleanCellValue(row.getCell(5)));
-            if (isNew) {
-                m_agentsFacade.create(agent);
-                newAgents.add(agentId);
-            } else {
-                m_agentsFacade.edit(agent);
-                editedAgents.add(agentId);
+            for (Agent a : m_agentsFacade.findAll()) {
+                if (!(newAgents.contains(a.getId()) || 
+                        editedAgents.contains(a.getId()))) 
+                {
+                    deletedAgents.add(a.getId());
+                    m_agentsFacade.remove(a);
+                }
             }
+            if (newAgents.size() > 0) {
+                JsfUtil.addSuccessMessage("update_add_sucess", 
+                        newAgents.size(), AGENTS);
+            }
+            if (editedAgents.size() > 0) {
+                JsfUtil.addSuccessMessage("update_edit_sucess", 
+                        editedAgents.size(), AGENTS);
+            }
+            if (deletedAgents.size() > 0) {
+                JsfUtil.addSuccessMessage("update_delete_sucess", 
+                        deletedAgents.size(), AGENTS);
+            }
+        } catch(Exception e) {
+            e.printStackTrace();
+            JsfUtil.addErrorMessageSummary(e, "update_error_sheet", AGENTS);
         }
-        for (Agent a : m_agentsFacade.findAll()) {
-            if (!(newAgents.contains(a.getId()) || 
-                    editedAgents.contains(a.getId()))) 
-            {
-                deletedAgents.add(a.getId());
-                m_agentsFacade.remove(a);
-            }
-        }
-        JsfUtil.addSuccessMessage("update_add_sucess", 
-                newAgents.size(), AGENTS);
-        JsfUtil.addSuccessMessage("update_edit_sucess", 
-                editedAgents.size(), AGENTS);
-        JsfUtil.addSuccessMessage("update_delete_sucess", 
-                deletedAgents.size(), AGENTS);
     }
 
     private void processUpdateClients(Sheet clientsSheet) {
@@ -189,57 +204,70 @@ public class UpdateView implements Serializable {
         Set<Integer> newClients = new HashSet<Integer>();
         Set<Integer> editedClients = new HashSet<Integer>();
         Set<Integer> deletedClients = new HashSet<Integer>();
-        for(int r = 1; r <= clientsSheet.getLastRowNum(); r++ ) {
-            row = clientsSheet.getRow(r);
-            System.out.println("Processing row: " + r);
-            clientId = new Double(row.getCell(0).getNumericCellValue()).intValue();
-            client = m_clientsFacade.find(clientId);
-            isNew = client == null;
-            if (isNew) {
-                client = new Client();
-                client.setId(clientId);
+        
+        try {
+            for(int r = 1; r <= clientsSheet.getLastRowNum(); r++ ) {
+                row = clientsSheet.getRow(r);
+                System.out.println("Processing row: " + r);
+                clientId = getNumericCellValue(getCell(row, 0)).intValue();
+                client = m_clientsFacade.find(clientId);
+                isNew = client == null;
+                if (isNew) {
+                    client = new Client();
+                    client.setId(clientId);
+                }
+                client.setName(getStringCellValue(getCell(row, 1)));
+                int iValue = getNumericCellValue(getCell(row, 2)).intValue();
+                Agent agent = m_agentsFacade.find(iValue);
+                if (agent == null) {
+                    throw new IllegalArgumentException(
+                            JsfUtil.getMessage("update_error_invalid_agent", 
+                                    iValue, clientId));
+                }
+                client.setAgent(agent);
+                iValue = getNumericCellValue(getCell(row, 3)).intValue();
+                if (iValue < 1 || iValue > 8) {
+                    throw new IllegalArgumentException(
+                            JsfUtil.getMessage("update_error_invalid_price_list",
+                                    iValue, clientId));
+                }
+                client.setPriceList(iValue);
+                client.setUsername(getStringCellValue(getCell(row, 4)));
+                client.setPasswd(getStringCellValue(getCell(row, 5)));
+                client.setActive(getBooleanCellValue(getCell(row, 6)));
+                if (isNew) {
+                    m_clientsFacade.create(client);
+                    newClients.add(clientId);
+                } else {
+                    m_clientsFacade.edit(client);
+                    editedClients.add(clientId);
+                }
             }
-            client.setName(getStringCellValue(row.getCell(1)));
-            int iValue = new Double(row.getCell(2).getNumericCellValue()).intValue();
-            Agent agent = m_agentsFacade.find(iValue);
-            if (agent == null) {
-                throw new IllegalArgumentException(
-                        JsfUtil.getMessage("update_error_invalid_agent", 
-                                iValue, clientId));
+            for (Client c : m_clientsFacade.findAll()) {
+                if (!(newClients.contains(c.getId()) || 
+                        editedClients.contains(c.getId()))) 
+                {
+                    deletedClients.add(c.getId());
+                    m_clientsFacade.remove(c);
+                }
             }
-            client.setAgent(agent);
-            iValue = new Double(row.getCell(3).getNumericCellValue()).intValue();
-            if (iValue < 1 || iValue > 8) {
-                throw new IllegalArgumentException(
-                        JsfUtil.getMessage("update_error_invalid_price_list",
-                                iValue, clientId));
+            
+            if (newClients.size() > 0) {
+                JsfUtil.addSuccessMessage("update_add_sucess", 
+                        newClients.size(), CLIENTS);
             }
-            client.setPriceList(iValue);
-            client.setUsername(getStringCellValue(row.getCell(4)));
-            client.setPasswd(getStringCellValue(row.getCell(5)));
-            client.setActive(getBooleanCellValue(row.getCell(6)));
-            if (isNew) {
-                m_clientsFacade.create(client);
-                newClients.add(clientId);
-            } else {
-                m_clientsFacade.edit(client);
-                editedClients.add(clientId);
+            if (editedClients.size() > 0) {
+                JsfUtil.addSuccessMessage("update_edit_sucess", 
+                        editedClients.size(), CLIENTS);
             }
+            if (deletedClients.size() > 0) {
+                JsfUtil.addSuccessMessage("update_delete_sucess", 
+                        deletedClients.size(), CLIENTS);
+            }
+        } catch(Exception e) {
+            e.printStackTrace();
+            JsfUtil.addErrorMessageSummary(e, "update_error_sheet", CLIENTS);
         }
-        for (Client c : m_clientsFacade.findAll()) {
-            if (!(newClients.contains(c.getId()) || 
-                    editedClients.contains(c.getId()))) 
-            {
-                deletedClients.add(c.getId());
-                m_clientsFacade.remove(c);
-            }
-        }
-        JsfUtil.addSuccessMessage("update_add_sucess", 
-                newClients.size(), CLIENTS);
-        JsfUtil.addSuccessMessage("update_edit_sucess", 
-                editedClients.size(), CLIENTS);
-        JsfUtil.addSuccessMessage("update_delete_sucess", 
-                deletedClients.size(), CLIENTS);
     }
     
     private void loadLinesMap() {
@@ -333,124 +361,148 @@ public class UpdateView implements Serializable {
         Set<String> editedProducts = new HashSet<String>();
         Set<String> deletedProducts = new HashSet<String>();
         int column;
-        loadLinesMap();
-        loadCategoriesMap();
-        for (int r = 1; r <= productsSheet.getLastRowNum(); r++) {
-            column = 0;
-            System.out.println("Processing row " + r);
-            row = productsSheet.getRow(r);
-            productId = getStringCellValue(row.getCell(column++));
-            product = m_productFacade.find(productId);
-            isNew = product == null;
-            if (isNew) {
-                product = new Product();
-                product.setId(productId);
-                smallImg = getImageFromFile(productId, SMALL_IMG);
-                largeImg = getImageFromFile(productId, LARGE_IMG);
-            } else {
-                for (ProductSpec pe : product.getProductSpecList()) {
-                    m_productSpecFacade.remove(pe);
-                }
-                smallImg = product.getSmallPic();
-                if (smallImg == null) {
+        
+        String currentSheet = PRODUCTS;
+        try {
+            loadLinesMap();
+            loadCategoriesMap();
+            for (int r = 1; r <= productsSheet.getLastRowNum(); r++) {
+                column = 0;
+                System.out.println("Processing row " + r);
+                row = productsSheet.getRow(r);
+                productId = getStringCellValue(getCell(row, column++));
+                product = m_productFacade.find(productId);
+                isNew = product == null;
+                if (isNew) {
+                    product = new Product();
+                    product.setId(productId);
                     smallImg = getImageFromFile(productId, SMALL_IMG);
-                }
-                largeImg = product.getBigPic();
-                if (largeImg == null) {
                     largeImg = getImageFromFile(productId, LARGE_IMG);
+                } else {
+                    for (ProductSpec pe : product.getProductSpecList()) {
+                        m_productSpecFacade.remove(pe);
+                    }
+                    smallImg = product.getSmallPic();
+                    if (smallImg == null) {
+                        smallImg = getImageFromFile(productId, SMALL_IMG);
+                    }
+                    largeImg = product.getBigPic();
+                    if (largeImg == null) {
+                        largeImg = getImageFromFile(productId, LARGE_IMG);
+                    }
+                }
+                product.setDescription(getStringCellValue(getCell(row, column++)));
+                product.setBasePrice(getNumericCellValue(getCell(row, column++)));
+                product.setPrice2(getNumericCellValue(getCell(row, column++)));
+                product.setPrice3(getNumericCellValue(getCell(row, column++)));
+                product.setPrice4(getNumericCellValue(getCell(row, column++)));
+                product.setPrice5(getNumericCellValue(getCell(row, column++)));
+                product.setPrice6(getNumericCellValue(getCell(row, column++)));
+                product.setPrice7(getNumericCellValue(getCell(row, column++)));
+                product.setPrice8(getNumericCellValue(getCell(row, column++)));
+                product.setPromotion(getNumericCellValue(getCell(row, column++)));
+                product.setIsPackage(getBooleanCellValue(getCell(row, column++)));
+                product.setSmallPic(smallImg);
+                product.setBigPic(largeImg);
+
+                Category category = findCategory(
+                        getStringCellValue(getCell(row, column++)),
+                        getStringCellValue(getCell(row, column++)),
+                        "I".equals(getStringCellValue(getCell(row, column++))) ? productId : null);
+                product.setCategory(category);
+
+                if (isNew) {
+                    m_productFacade.create(product);
+                    newProducts.add(productId);
+                } else {
+                    m_productFacade.edit(product);
+                    editedProducts.add(productId);
                 }
             }
-            product.setDescription(getStringCellValue(row.getCell(column++)));
-            product.setBasePrice(row.getCell(column++).getNumericCellValue());
-            product.setPrice2(row.getCell(column++).getNumericCellValue());
-            product.setPrice3(row.getCell(column++).getNumericCellValue());
-            product.setPrice4(row.getCell(column++).getNumericCellValue());
-            product.setPrice5(row.getCell(column++).getNumericCellValue());
-            product.setPrice6(row.getCell(column++).getNumericCellValue());
-            product.setPrice7(row.getCell(column++).getNumericCellValue());
-            product.setPrice8(row.getCell(column++).getNumericCellValue());
-            product.setPromotion(row.getCell(column++).getNumericCellValue());
-            product.setIsPackage(row.getCell(column++).getNumericCellValue() == 1);
-            product.setSmallPic(smallImg);
-            product.setBigPic(largeImg);
-            
-            Category category = findCategory(
-                    getStringCellValue(row.getCell(column++)),
-                    getStringCellValue(row.getCell(column++)),
-                    "I".equals(getStringCellValue(row.getCell(column++))) ? productId : null);
-            product.setCategory(category);
+            // Delete remaining products
+            for(Product p : m_productFacade.findAll()) {
+                if (!(newProducts.contains(p.getId()) || 
+                        editedProducts.contains(p.getId()))) 
+                {
+                    deletedProducts.add(p.getId());
+                    m_productFacade.remove(p);
+                }
+            }
 
-            if (isNew) {
-                m_productFacade.create(product);
-                newProducts.add(productId);
-            } else {
-                m_productFacade.edit(product);
-                editedProducts.add(productId);
+            // Process specs
+            currentSheet = PRODUCTS_SPECS;
+            ProductSpec productSpec;
+            Set<String> specsProducts = new HashSet<String>();
+            for (int r = 1; r <= specsSheet.getLastRowNum(); r++) {
+                row = specsSheet.getRow(r);
+                productId = getStringCellValue(getCell(row, 0));
+                product = m_productFacade.find(productId);
+                if (product != null) {
+                    productSpec = new ProductSpec();
+                    productSpec.setSpec(getStringCellValue(getCell(row, 1)));
+                    productSpec.setValue(getStringCellValue(getCell(row, 4)));
+                    productSpec.setProduct(product);
+                    m_productSpecFacade.create(productSpec);
+                    specsProducts.add(productId);
+                }
             }
-        }
-        // Delete remaining products
-        for(Product p : m_productFacade.findAll()) {
-            if (!(newProducts.contains(p.getId()) || 
-                    editedProducts.contains(p.getId()))) 
-            {
-                deletedProducts.add(p.getId());
-                m_productFacade.remove(p);
-            }
-        }
 
-        // Process specs
-        ProductSpec productSpec;
-        Set<String> specsProducts = new HashSet<String>();
-        for (int r = 1; r <= specsSheet.getLastRowNum(); r++) {
-            row = specsSheet.getRow(r);
-            productId = getStringCellValue(row.getCell(0));
-            product = m_productFacade.find(productId);
-            if (product != null) {
-                productSpec = new ProductSpec();
-                productSpec.setSpec(getStringCellValue(row.getCell(1)));
-                productSpec.setValue(getStringCellValue(row.getCell(4)));
-                productSpec.setProduct(product);
-                m_productSpecFacade.create(productSpec);
-                specsProducts.add(productId);
+            updateCategories();
+
+            if (newProducts.size() > 0) {
+                JsfUtil.addSuccessMessage("update_add_sucess", 
+                        newProducts.size(), PRODUCTS);
             }
+            if (editedProducts.size() > 0) {
+                JsfUtil.addSuccessMessage("update_edit_sucess", 
+                        editedProducts.size(), PRODUCTS);
+            }
+            if (deletedProducts.size() > 0) {
+                JsfUtil.addSuccessMessage("update_delete_sucess", 
+                        deletedProducts.size(), PRODUCTS);
+            }
+            if (specsProducts.size() > 0) {
+                JsfUtil.addSuccessMessage("update_edit_sucess", 
+                        specsProducts.size(), PRODUCTS_SPECS);
+            }
+        } catch(Exception e) {
+            e.printStackTrace();
+            JsfUtil.addErrorMessageSummary(e, "update_error_sheet", currentSheet);
         }
-        
-        updateCategories();
-        
-        JsfUtil.addSuccessMessage("update_add_sucess", 
-                newProducts.size(), PRODUCTS);
-        JsfUtil.addSuccessMessage("update_edit_sucess", 
-                editedProducts.size(), PRODUCTS);
-        JsfUtil.addSuccessMessage("update_delete_sucess", 
-                deletedProducts.size(), PRODUCTS);
-        JsfUtil.addSuccessMessage("update_edit_sucess", 
-                specsProducts.size(), PRODUCTS_SPECS);
+    }
+    
+    private Double getNumericCellValue(Cell cell) {
+        if (Cell.CELL_TYPE_NUMERIC == cell.getCellType()) {
+            return cell.getNumericCellValue();
+        } else if (Cell.CELL_TYPE_BLANK == cell.getCellType()) {
+            return 0.0;
+        }
+        throw new IllegalArgumentException(
+                JsfUtil.getMessage("update_error_cell", cell.getColumnIndex() + 1, cell.getRowIndex() + 1));
     }
     
     private boolean getBooleanCellValue(Cell cell) {
-        boolean booleanValue;
-        if (Cell.CELL_TYPE_BOOLEAN == cell.getCellType()) {
-            booleanValue = cell.getBooleanCellValue();
-        } else if(Cell.CELL_TYPE_NUMERIC == cell.getCellType()) {
-            booleanValue = cell.getNumericCellValue() != 0;
-        } else {
-            booleanValue = TRUE.equals(cell.getStringCellValue());
+        if (Cell.CELL_TYPE_NUMERIC == cell.getCellType()) {
+            return cell.getNumericCellValue() == 1;
         }
-        return booleanValue;
+        throw new IllegalArgumentException(
+                JsfUtil.getMessage("update_error_cell", cell.getColumnIndex() + 1, cell.getRowIndex() + 1));
     }
     
     private String getStringCellValue(Cell cell) {
-        String value;
         if(Cell.CELL_TYPE_NUMERIC == cell.getCellType()) {
             Double dValue = cell.getNumericCellValue();
-            value = dValue % 1 == 0 ? 
+            return dValue % 1 == 0 ? 
                     String.valueOf(dValue.intValue()) : String.valueOf(dValue);
         } else if (Cell.CELL_TYPE_BLANK == cell.getCellType()) {
-            value = "";
-        } else {
-            value = cell.getStringCellValue();
+            return "";
+        } else if (Cell.CELL_TYPE_STRING == cell.getCellType()){
+            return cell.getStringCellValue();
+        } else if (Cell.CELL_TYPE_FORMULA == cell.getCellType()) {
+            return cell.getStringCellValue();
         }
-        return value;
+        throw new IllegalArgumentException(
+                JsfUtil.getMessage("update_error_cell", cell.getColumnIndex() + 1, cell.getRowIndex() + 1));
     }
     
     private byte[] getImageFromFile(String productId, String type) throws IOException  {

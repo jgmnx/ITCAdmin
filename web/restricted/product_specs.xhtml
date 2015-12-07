@@ -103,9 +103,9 @@
                 </h:panelGrid>
                 
                 <h:panelGroup id="cont5">
-                    <p:dataTable id="productSpecsDT" var="productSpec" value="#{productSpecsView.productSpecs}">
+                    <p:dataTable id="productSpecsDT" var="productSpec" value="#{productSpecsView.productSpecs}" >
                         <f:facet name="header">
-                            #{bundle.product_specs_table_title}
+                            #{bundle.product_specs_table_title} #{productSpecsView.selectedProductId}
                         </f:facet>
                         <p:column headerText="#{bundle.product_specs_table_header_spec}" 
                                   sortBy="#{productSpec.spec}">

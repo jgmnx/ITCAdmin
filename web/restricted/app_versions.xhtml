@@ -22,13 +22,13 @@
         </ui:define>
 
         <ui:define name="body">
-            <h:form id="form">
-                <p:growl id="messages" showDetail="true" />
+            <h:form id="xform">
+                <p:growl id="messages" showDetail="true" sticky="true" showSummary="true"/>
                 
                 <p:commandButton id="app_versions_add"
                     value="#{bundle.app_versions_add_button}"
                     oncomplete="PF('appVersionDialog').show();" 
-                    update="messages,:form:appVersionDetail" 
+                    update="messages,:xform:appVersionDetail" 
                     actionListener="#{appVersionsView.createAppVersion}"/>
                 
                 <br/><br/>
@@ -68,7 +68,7 @@
                                      icon="ui-icon-check"
                                      actionListener="#{appVersionsView.deleteAppVersion}" 
                                      oncomplete="PF('confirmDeleteDialog').hide()"
-                                     update="messages,:form:appVersionsDT"
+                                     update="messages,:xform:appVersionsDT"
                                      />
                     <p:commandButton value="No" type="button" 
                                      onclick="PF('confirmDeleteDialog').hide()" 
@@ -88,7 +88,7 @@
                         </p:panelGrid>
                     </p:outputPanel>
                     <f:facet name="footer">
-                        <p:commandButton update=":form:appVersionsDT" 
+                        <p:commandButton update=":xform:appVersionsDT" 
                                          oncomplete="PF('appVersionDialog').hide()" 
                                          icon="ui-icon-disk" title="#{bundle.global_button_save}" 
                                          value="#{bundle.global_button_save}" 

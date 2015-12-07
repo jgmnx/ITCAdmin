@@ -1,13 +1,9 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.itc.admin.entity;
 
 import java.io.Serializable;
 import java.util.List;
 import javax.persistence.Basic;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -19,8 +15,6 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
@@ -28,7 +22,6 @@ import javax.xml.bind.annotation.XmlTransient;
  */
 @Entity
 @Table(name = "PRODUCT", catalog = "", schema = "ITC")
-@XmlRootElement
 @NamedQueries({
     @NamedQuery(name = "Product.findAll", query = "SELECT p FROM Product p"),
     @NamedQuery(name = "Product.findById", query = "SELECT p FROM Product p WHERE p.id = :id"),
@@ -71,9 +64,13 @@ public class Product implements Serializable {
     private Boolean isPackage;
     @Column(name = "SMALL_PIC")
     private byte[] smallPic;
+    @Column(name = "CHKSUM_SMALL")
+    private long checksumSmallPic;
     @Column(name = "BIG_PIC")
     private byte[] bigPic;
-    @OneToMany(mappedBy = "product")
+    @Column(name = "CHKSUM_BIG")
+    private long checksumBigPic;
+    @OneToMany(mappedBy = "product", cascade = {CascadeType.ALL})
     private List<ProductSpec> productSpecList;
     @JoinColumn(name = "CATEGORY", referencedColumnName = "ID")
     @ManyToOne
@@ -189,6 +186,14 @@ public class Product implements Serializable {
     public void setSmallPic(byte[] smallPic) {
         this.smallPic = smallPic;
     }
+    
+    public long getChecksumSmallPic() {
+        return checksumSmallPic;
+    }
+    
+    public void setChecksumSmallPic(long checksumSmallPic) {
+        this.checksumSmallPic = checksumSmallPic;
+    }
 
     public byte[] getBigPic() {
         return bigPic;
@@ -197,8 +202,15 @@ public class Product implements Serializable {
     public void setBigPic(byte[] bigPic) {
         this.bigPic = bigPic;
     }
-
-    @XmlTransient
+    
+    public long getChecksumBigPic() {
+        return checksumBigPic;
+    }
+    
+    public void setChecksumBigPic(long checksumBigPic) {
+        this.checksumBigPic = checksumBigPic;
+    }
+    
     public List<ProductSpec> getProductSpecList() {
         return productSpecList;
     }

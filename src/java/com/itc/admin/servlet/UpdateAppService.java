@@ -3,9 +3,11 @@ package com.itc.admin.servlet;
 import com.itc.admin.entity.Agent;
 import com.itc.admin.entity.Category;
 import com.itc.admin.entity.Client;
+import com.itc.admin.entity.ImageCatalog;
 import com.itc.admin.entity.Line;
 import com.itc.admin.entity.Product;
 import com.itc.admin.entity.ProductSpec;
+import com.itc.admin.session.ImageCatalogFacade;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -40,6 +42,9 @@ public class UpdateAppService extends HttpServlet {
     private com.itc.admin.session.ProductFacade m_productFacade;
     @EJB
     private com.itc.admin.session.ProductSpecFacade m_productSpecFacade;
+    @EJB
+    private ImageCatalogFacade m_imageCatalogFacade;
+    
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
@@ -59,7 +64,6 @@ public class UpdateAppService extends HttpServlet {
         JSONObject db = new JSONObject();
         PrintWriter out = response.getWriter();
         try {
-            
             if (sUserId == null || sUserId.isEmpty() || type == null || type.isEmpty()) {
                 db = new JSONObject();
                 db.put("error", "Invalid input");
@@ -72,6 +76,8 @@ public class UpdateAppService extends HttpServlet {
                 db.put("agents", getAgents(userId, type));
                 db.put("products", getProducts());
                 db.put("product_specs", getProductSpecs());
+                db.put("new_products", getCatalogNewProducts());
+                db.put("promos", getCatalogPromos());
             }
         } catch (Exception e) {
             db = new JSONObject();
@@ -120,13 +126,13 @@ public class UpdateAppService extends HttpServlet {
     private JSONArray getClients(Integer userId, String type) {
         List<Client> clients = null;
         
-        if ("a".equals(type)) {
+        if ("a".equals(type.toLowerCase())) {
             if (m_agentFacade.find(userId).getSuperuser()) {
                 clients = m_clientFacade.findAll();
             } else {
                 clients = m_clientFacade.findByAgentId(userId);
             }
-        } else if ("c".equals(type)){
+        } else if ("c".equals(type.toLowerCase())){
             clients = new ArrayList<Client>();
             clients.add(m_clientFacade.find(userId));
         }
@@ -134,6 +140,8 @@ public class UpdateAppService extends HttpServlet {
         for (Client client : clients) {
             JSONObject jsonObj = new JSONObject();
             jsonObj.put("id", client.getId());
+            jsonObj.put("user", client.getUsername());
+            jsonObj.put("passwd", client.getPasswd());
             jsonObj.put("name", StringEscapeUtils.escapeHtml(client.getName()));
             jsonObj.put("agent_id", client.getAgent().getId());
             jsonObj.put("price_type", client.getPriceList());
@@ -145,16 +153,18 @@ public class UpdateAppService extends HttpServlet {
     private JSONArray getAgents(Integer userId, String type) {
         List<Agent> agents = new ArrayList<Agent>();
         
-        if ("a".equals(type)) {
-            agents.add(m_agentFacade.find(userId));
+        if ("a".equals(type.toLowerCase())) {
+            //agents.add(m_agentFacade.find(userId));
+            agents.addAll(m_agentFacade.findAll());
         }
         JSONArray jsonArray = new JSONArray();
         for (Agent agent : agents) {
             JSONObject jsonObj = new JSONObject();
             jsonObj.put("id", agent.getId());
-            jsonObj.put("name", agent.getName());
             jsonObj.put("user", agent.getUsername());
             jsonObj.put("passwd", agent.getPasswd());
+            jsonObj.put("super", agent.getSuperuser());
+            jsonObj.put("name", agent.getName());
             jsonArray.add(jsonObj);
         }
         return jsonArray;
@@ -170,12 +180,17 @@ public class UpdateAppService extends HttpServlet {
             jsonObj.put("line", product.getCategory().getLine().getId());
             jsonObj.put("category", product.getCategory().getId());
             jsonObj.put("base_price", product.getBasePrice());
+            jsonObj.put("price_2", product.getPrice2());
+            jsonObj.put("price_3", product.getPrice3());
+            jsonObj.put("price_4", product.getPrice4());
             jsonObj.put("price_5", product.getPrice5());
             jsonObj.put("price_6", product.getPrice6());
             jsonObj.put("price_7", product.getPrice7());
             jsonObj.put("price_8", product.getPrice8());
             jsonObj.put("promotion", product.getPromotion());
             jsonObj.put("is_package", (product.getIsPackage() != null && product.getIsPackage()) ? 1 : 0);
+            jsonObj.put("chksum_small", product.getChecksumSmallPic());
+            jsonObj.put("chksum_big", product.getChecksumBigPic());
             jsonArray.add(jsonObj);
         }
         return jsonArray;
@@ -192,6 +207,30 @@ public class UpdateAppService extends HttpServlet {
             jsonArray.add(jsonObj);
         }
         return jsonArray; 
+    }
+    
+    private JSONArray getCatalogNewProducts() {
+        List<ImageCatalog> allNewProductsImages = m_imageCatalogFacade.findAllNewProducts();
+        JSONArray jsonArray = new JSONArray();
+        for (ImageCatalog newProductImage : allNewProductsImages) {
+            JSONObject jsonObj = new JSONObject();
+            jsonObj.put("order", newProductImage.getOrder());
+            jsonObj.put("chksum", newProductImage.getChecksum());
+            jsonArray.add(jsonObj);
+        }
+        return jsonArray;
+    }
+    
+    private JSONArray getCatalogPromos() {
+        List<ImageCatalog> allPromoImages = m_imageCatalogFacade.findAllPromos();
+        JSONArray jsonArray = new JSONArray();
+        for (ImageCatalog promoImages : allPromoImages) {
+            JSONObject jsonObj = new JSONObject();
+            jsonObj.put("order", promoImages.getOrder());
+            jsonObj.put("chksum", promoImages.getChecksum());
+            jsonArray.add(jsonObj);
+        }
+        return jsonArray;
     }
 
     /**

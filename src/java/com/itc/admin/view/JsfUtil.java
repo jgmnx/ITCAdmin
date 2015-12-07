@@ -33,28 +33,21 @@ public class JsfUtil {
         String summaryMsg = getMessage(summaryMsgId, args);
         String msg = ex.getLocalizedMessage();
         FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_ERROR, summaryMsg, msg);
-        FacesContext.getCurrentInstance().addMessage(null, facesMsg);
-    }
-    
-    public static void addErrorMessage(Exception ex, String msgId, Object... args) {
-        String summaryMsg = getMessage(msgId, args);
-        String msg = ex.getLocalizedMessage();
-        FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_ERROR, summaryMsg, msg);
-        FacesContext.getCurrentInstance().addMessage(null, facesMsg);
+        FacesContext.getCurrentInstance().addMessage("errorInfo", facesMsg);
     }
     
     public static void addErrorMessageSummary(String summaryMsgId, String msgId, Object... args) {
         String summaryMsg = getMessage(summaryMsgId, args);
         String msg = getMessage(msgId, args);
         FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_ERROR, summaryMsg, msg);
-        FacesContext.getCurrentInstance().addMessage(null, facesMsg);
+        FacesContext.getCurrentInstance().addMessage("errorInfo", facesMsg);
     }
 
     public static void addErrorMessage(String msgId, Object... args) {
         String summaryMsg = getMessage("global_error_msg");
         String message = getMessage(msgId, args);
         FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_ERROR, summaryMsg, message);
-        FacesContext.getCurrentInstance().addMessage(null, facesMsg);
+        FacesContext.getCurrentInstance().addMessage("errorInfo", facesMsg);
     }
     
     public static void addSuccessMessageSummary(String summaryMsgId, String msgId, Object... args) {
@@ -86,7 +79,6 @@ public class JsfUtil {
     }
 
     public static enum PersistAction {
-
         CREATE,
         DELETE,
         UPDATE
